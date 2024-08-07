@@ -1,9 +1,8 @@
 package com.example.hc06bluetoothreceiver;
 
-import java.util.Set;
+import java.util.Map;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -16,13 +15,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
+
+import com.example.hc06bluetoothreceiver.util.bluetooth.BluetoothUtil;
 
 @SuppressLint("MissingPermission")
 public class DeviceListActivity extends Activity
 {
     protected static final String TAG = "TAG";
     private static final String NO_DEVICES_ERROR_MESSAGE = "No bluetooth devices found";
+    private static final String DEVICE_NOT_AVAILABLE_ERROR_MESSAGE = "Device Connection Failed!";
     private BluetoothAdapter bluetoothAdapter;
+    Map<String, BluetoothDevice> pairedDevices;
     private ArrayAdapter<String> pairedDevicesArrayAdapter;
 
     @Override
@@ -31,6 +35,7 @@ public class DeviceListActivity extends Activity
         super.onCreate(mSavedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.device_list_activity);
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
     @Override
@@ -45,16 +50,12 @@ public class DeviceListActivity extends Activity
         pairedDevicesListView.setAdapter(pairedDevicesArrayAdapter);
         pairedDevicesListView.setOnItemClickListener(deviceClickListener);
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        pairedDevices = BluetoothUtil.GetPairedDevices();
 
         if (pairedDevices.size() > 0)
         {
             findViewById(R.id.paird_devices_text_view).setVisibility(View.VISIBLE);
-            for (BluetoothDevice device : pairedDevices)
-            {
-                pairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-            }
+            pairedDevicesArrayAdapter.addAll(pairedDevices.keySet());
         }
         else
         {
@@ -77,17 +78,25 @@ public class DeviceListActivity extends Activity
         public void onItemClick(AdapterView<?> mAdapterView, View mView, int mPosition, long mLong)
         {
             bluetoothAdapter.cancelDiscovery();
+            Bundle bundle = new Bundle();
+            Intent resultIntent = new Intent();
             String deviceInfo = ((TextView) mView).getText().toString();
-            Log.v(TAG, "Device_Address " + deviceInfo);
+            BluetoothDevice deviceClicked = pairedDevices.get(deviceInfo);
             String deviceAddress = deviceInfo.substring(deviceInfo.length() - 17);
+
+            Log.v(TAG, "Device_Address " + deviceInfo);
             Log.v(TAG, "Device_Address " + deviceAddress);
 
-            Bundle bundle = new Bundle();
-            bundle.putString("DeviceAddress", deviceAddress);
-            Intent backIntent = new Intent();
-            backIntent.putExtras(bundle);
-            setResult(Activity.RESULT_OK, backIntent);
-            finish();
+            boolean activeConnectionCreated = BluetoothUtil.createActiveConnection(deviceClicked);
+            if (!activeConnectionCreated) {
+                runOnUiThread(() -> {
+                    showToastLong(DEVICE_NOT_AVAILABLE_ERROR_MESSAGE);
+                });
+            } else {
+                setResult(Activity.RESULT_OK, resultIntent);
+                finish();
+            }
+
         }
     };
 

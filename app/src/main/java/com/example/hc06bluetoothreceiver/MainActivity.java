@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import com.example.hc06bluetoothreceiver.util.bluetooth.BluetoothUtil;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -25,7 +26,6 @@ import com.example.hc06bluetoothreceiver.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
-import android.bluetooth.BluetoothAdapter;
 import android.widget.Toast;
 
 @SuppressLint("MissingPermission")
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     };
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
-    BluetoothAdapter bluetoothAdapter;
+    private static String listDeviceResult = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,13 +97,7 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         checkBluetoothPermission();
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter == null)
-        {
-            Toast.makeText(this, "Message1", Toast.LENGTH_LONG).show();
-        } else {
-            listPairedDevices();
-        }
+        listPairedDevices();
     }
 
     private void checkBluetoothPermission() {
@@ -128,12 +122,11 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        // There are no request codes
-                        Intent data = result.getData();
-                        Toast.makeText(this, data.getStringExtra("DeviceAddress"), Toast.LENGTH_LONG);
+                        listDeviceResult = BluetoothUtil.getConnectedDevice().getAddress();
+                    } else {
+                        listDeviceResult = "Connection failed!";
                     }
                 });
         someActivityResultLauncher.launch(intent);
-        Toast.makeText(this, " Launch??", Toast.LENGTH_SHORT).show();
     }
 }
