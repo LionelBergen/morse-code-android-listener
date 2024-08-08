@@ -32,3 +32,10 @@ android {
 }
 
 apply from: 'dependencies.gradle'
+
+dependencies {
+    implementation libs.material
+    implementation libs.appcompat
+    implementation libs.constraintlayout
+    implementation libs.navigation.fragment
+}

@@ -123,10 +123,16 @@ public class MainActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         listDeviceResult = BluetoothUtil.getConnectedDevice().getAddress();
+                        goToNextActivity();
                     } else {
                         listDeviceResult = "Connection failed!";
                     }
                 });
         someActivityResultLauncher.launch(intent);
+    }
+
+    private void goToNextActivity() {
+        Intent intent = new Intent(this, ConnectedToDeviceActivity.class);
+        startActivity(intent);
     }
 }

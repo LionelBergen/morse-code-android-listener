@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 public class BluetoothUtil {
     private static BluetoothSocket activeConnection;
     private static BluetoothDevice connectedDevice;
-    private static final UUID connectionUUID = UUID.randomUUID();
+    private static final UUID connectionUUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+    // UUID.randomUUID();
     protected static final String TAG = "BluetoothUtil";
 
     public static Map<String, BluetoothDevice> GetPairedDevices() {
@@ -47,6 +48,10 @@ public class BluetoothUtil {
 
     public static BluetoothDevice getConnectedDevice() {
         return connectedDevice;
+    }
+
+    public static BluetoothSocket getActiveConnection() {
+        return activeConnection;
     }
 
     private static String getDisplayKey(BluetoothDevice device) {
